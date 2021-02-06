@@ -8,36 +8,37 @@ import React, {
 import Photo from "./Photo";
 function App() {
   //const access_key = `-L7qL-z8HiLMFmAEsyOcjrk4lGxGC8hxfxHOLpohPP8`;
-  const link = `https://api.unsplash.com/photos/?client_id=-L7qL-z8HiLMFmAEsyOcjrk4lGxGC8hxfxHOLpohPP8`;
+  const url = `https://api.unsplash.com/photos/?client_id=-L7qL-z8HiLMFmAEsyOcjrk4lGxGC8hxfxHOLpohPP8&page=`;
   const [photos, setPhotos] = useState([]);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
-  const observer = useRef();
-  const lastPhoto = useCallback((node) => {
-    console.log("====", node);
-    if (observer.current) observer.current.disconnet();
-    observer.current = new IntersectionObserver((entry) => {});
-    if (node) observer.current.observe(node);
-  }, []);
+
   const fetchPhoto = async () => {
     setLoading(true);
+    const link = url + page;
+    console.log("page", page);
     const response = await fetch(link);
     const data = await response.json();
-    setPhotos(data);
-    // console.log(photos);
-    // console.log(data[0].urls.regular);
+    const newdata = [...photos, ...data];
+    setPhotos(newdata);
     setLoading(false);
   };
   useEffect(() => {
     fetchPhoto();
-  }, []);
+  }, [page]);
+
+  const addImage = () => {
+    setPage((prevPage) => prevPage + 1);
+  };
+
   return (
     <>
       <div className="photos">
         {photos.map((photo, index) => {
           if (index === photos.length - 1) {
             return (
-              <div key={photo.id} ref={lastPhoto}>
-                <Photo data={photo} />;
+              <div key={photo.id}>
+                <Photo data={photo} />
               </div>
             );
           } else {
@@ -45,6 +46,9 @@ function App() {
           }
         })}
       </div>
+      <button type="submit" onClick={addImage}>
+        Add next batch
+      </button>
     </>
   );
 }
