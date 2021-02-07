@@ -13,6 +13,30 @@ function App() {
   const [photos, setPhotos] = useState([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  const observer = useRef();
+
+  useEffect(() => {
+    observer.current = new IntersectionObserver(
+      (entries) => {
+        addImage();
+      },
+      { threshol: 1 }
+    );
+  }, []);
+  const [element, setElement] = useState(null);
+  useEffect(() => {
+    const currentElement = element;
+    const currentOvserver = observer.current;
+    if (currentElement) {
+      currentOvserver.observe(currentElement);
+    }
+
+    return () => {
+      if (currentElement) {
+        currentOvserver.unobserve(currentElement);
+      }
+    };
+  }, [element]);
 
   const fetchPhoto = async () => {
     setLoading(true);
@@ -29,7 +53,12 @@ function App() {
   }, [page]);
 
   const addImage = () => {
-    setPage((prevPage) => prevPage + 1);
+    if (!loading) {
+      setPage((prevPage) => prevPage + 1);
+      console.log("add image");
+    } else {
+      console.log("hey this is loading");
+    }
   };
 
   return (
@@ -47,9 +76,8 @@ function App() {
           }
         })}
       </div>
-      <button type="submit" onClick={addImage}>
-        Add next batch
-      </button>
+      <div ref={setElement}> </div>
+      {loading && <h2 c>Loading...</h2>}
     </>
   );
 }
